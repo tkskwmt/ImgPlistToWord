@@ -1,0 +1,4 @@
+bin/*.xlsm
+bin/*.doc
+!bin/_new.doc
+command.txt
