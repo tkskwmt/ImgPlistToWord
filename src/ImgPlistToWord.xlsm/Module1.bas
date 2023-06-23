@@ -197,7 +197,7 @@ Sub writeWordFile()
                     .TypeParagraph
                 End If
                 .EndKey Unit:=wdStory
-                .TypeText Text:=CStr(ThisWorkbook.Sheets(1).Cells(i, 3))
+                .TypeText Text:=CStr(ThisWorkbook.Sheets(1).Cells(i, 3)) & " :"
                 .TypeParagraph
             Case "subCategory"
                 If ThisWorkbook.Sheets(1).Cells(i - 1, 2) = "imageFile" And imageFileCount Mod 2 = 1 Then
