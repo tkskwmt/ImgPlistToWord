@@ -116,6 +116,7 @@ Sub unzipFile()
     Dim result As Integer
     Dim zipFilePath As String
     Dim toFolderPath
+    Dim posFld
     
     With Sheets(1)
         zipFilePath = Replace(.Cells(1, 3), "&img.plist", ".zip")
@@ -123,7 +124,8 @@ Sub unzipFile()
             MsgBox (zipFilePath & " doesn't exist")
             Exit Sub
         End If
-        toFolderPath = "C:\temp"
+        posFld = InStrRev(.Cells(1, 3), "\")
+        toFolderPath = Mid(.Cells(1, 3), 1, posFld - 1)
         
         Set WSH = CreateObject("WScript.Shell")
         psCommand = "Expand-Archive -Path " & zipFilePath & " -DestinationPath " & toFolderPath & " -Force"
@@ -197,7 +199,7 @@ Sub writeWordFile()
                     .TypeParagraph
                 End If
                 .EndKey Unit:=wdStory
-                .TypeText Text:=CStr(ThisWorkbook.Sheets(1).Cells(i, 3)) & " :"
+                .TypeText Text:=CStr(replaceLabel(ThisWorkbook.Sheets(1).Cells(i, 3))) & " :"
                 .TypeParagraph
             Case "subCategory"
                 If ThisWorkbook.Sheets(1).Cells(i - 1, 2) = "imageFile" And imageFileCount Mod 2 = 1 Then
@@ -206,7 +208,7 @@ Sub writeWordFile()
                 End If
                 imageFileCount = 0
                 .EndKey Unit:=wdStory
-                .TypeText Text:=CStr("- " & ThisWorkbook.Sheets(1).Cells(i, 3))
+                .TypeText Text:=CStr("- " & replaceLabel(ThisWorkbook.Sheets(1).Cells(i, 3)))
                 .TypeParagraph
             End Select
         Next i
@@ -222,3 +224,35 @@ Sub writeWordFile()
     MsgBox ("Completed")
 
 End Sub
+Function replaceLabel(ByVal target)
+    Dim maxRow, i, j
+    Dim initialTarget
+    Dim findStr, replaceStr
+    Dim arr1 As Variant
+    
+    
+    maxRow = Sheets("replace").Cells(1048576, 1).End(xlUp).Row
+    initialTarget = target
+    For i = 2 To maxRow
+        findStr = Sheets("replace").Cells(i, 1)
+        replaceStr = Sheets("replace").Cells(i, 2)
+        arr1 = Split(target, "(")
+        target = ""
+        For j = 0 To UBound(arr1)
+            If InStr(arr1(j), findStr) > 0 And InStr(replaceStr, "*") > 0 Then
+                If j = 0 Then
+                    target = Replace(replaceStr, "*", Trim(arr1(j)))
+                Else
+                    target = target & " (" & Replace(replaceStr, "*", Trim(arr1(j)))
+                End If
+            Else
+                If j = 0 Then
+                    target = Replace(Trim(arr1(j)), findStr, replaceStr)
+                Else
+                    target = target & " (" & Replace(Trim(arr1(j)), findStr, replaceStr)
+                End If
+            End If
+        Next j
+    Next i
+    replaceLabel = target
+End Function
