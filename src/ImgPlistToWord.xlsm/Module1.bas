@@ -106,6 +106,41 @@ Sub loadImgPlist()
             .SortMethod = xlPinYin
             .Apply
         End With
+        'remove subCategory which has no photos
+        For i = startRow To maxRow
+            If .Cells(i, 2) = "countStoredImages" And .Cells(i, 3) = 0 Then
+                .Range(.Cells(i - 1, 1), .Cells(i, 3)).ClearContents
+            End If
+        Next i
+        .Sort.SortFields.Clear
+        .Sort.SortFields.Add2 Key:=.Range(.Cells(startRow, 1), .Cells(maxRow, 1)), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+        With .Sort
+            .SetRange Range(Cells(startRow, 1), Cells(maxRow, 3))
+            .Header = xlGuess
+            .MatchCase = False
+            .Orientation = xlTopToBottom
+            .SortMethod = xlPinYin
+            .Apply
+        End With
+        'remove mainCategory which has no subCategories
+        maxRow = .Cells(1048576, 1).End(xlUp).Row
+        For i = startRow To maxRow
+            If .Cells(i, 2) = "mainCategory" Then
+                If .Cells(i + 1, 1) = "" Or (.Cells(i + 1, 1) - .Cells(i, 1)) >= 100 Then
+                    .Range(.Cells(i, 1), .Cells(i, 3)).ClearContents
+                End If
+            End If
+        Next i
+        .Sort.SortFields.Clear
+        .Sort.SortFields.Add2 Key:=.Range(.Cells(startRow, 1), .Cells(maxRow, 1)), SortOn:=xlSortOnValues, Order:=xlAscending, DataOption:=xlSortNormal
+        With .Sort
+            .SetRange Range(Cells(startRow, 1), Cells(maxRow, 3))
+            .Header = xlGuess
+            .MatchCase = False
+            .Orientation = xlTopToBottom
+            .SortMethod = xlPinYin
+            .Apply
+        End With
     End With
     
     MsgBox ("Completed")
@@ -151,6 +186,7 @@ Sub writeWordFile()
     Dim thisExtension
     Dim wordFileName
     Dim i
+    Dim realSize, picSize
     
     defaultPath = ThisWorkbook.Path
     Set WORD = CreateObject("Word.Application")
@@ -160,6 +196,7 @@ Sub writeWordFile()
     imageFileCount = 0
     startRowSheet1 = 20
     imageSize = ThisWorkbook.Sheets(1).Cells(13, 2)
+    realSize = 0
     
     With WORD.Selection
         FolderName = Replace(ThisWorkbook.Sheets(1).Cells(1, 3), "&img.plist", "") & "\"
@@ -172,6 +209,14 @@ Sub writeWordFile()
                 thisExtension = LCase(FSO.GetExtensionName(thisFilePath))
                 Select Case thisExtension
                 Case "jpg", "jpeg"
+                    If imageFileCount Mod 2 = 0 Then
+                        'none
+                    Else
+                        If realSize + picSize >= 733.5 Then
+                            .InsertBreak (wdPageBreak)
+                            realSize = 0
+                        End If
+                    End If
                     Set PIC = DOC.Bookmarks("\EndOfDoc").Range.InlineShapes.AddPicture(thisFilePath)
                     With PIC
                         .LockAspectRatio = msoTrue
@@ -190,6 +235,10 @@ Sub writeWordFile()
                     If imageFileCount Mod 2 = 0 Then
                         .TypeParagraph
                         .TypeParagraph
+                        realSize = realSize + 12.25
+                    Else
+                        picSize = PIC.Height
+                        realSize = realSize + picSize
                     End If
                     Set PIC = Nothing
                 End Select
@@ -197,19 +246,31 @@ Sub writeWordFile()
                 If ThisWorkbook.Sheets(1).Cells(i - 1, 2) = "imageFile" And imageFileCount Mod 2 = 1 Then
                     .TypeParagraph
                     .TypeParagraph
+                    realSize = realSize + 12.25
+                End If
+                If realSize + 12.25 * 2 + picSize >= 733.5 Then
+                    .InsertBreak (wdPageBreak)
+                    realSize = 0
                 End If
                 .EndKey Unit:=wdStory
                 .TypeText Text:=CStr(replaceLabel(ThisWorkbook.Sheets(1).Cells(i, 3))) & " :"
                 .TypeParagraph
+                realSize = realSize + 12.25
             Case "subCategory"
                 If ThisWorkbook.Sheets(1).Cells(i - 1, 2) = "imageFile" And imageFileCount Mod 2 = 1 Then
                     .TypeParagraph
                     .TypeParagraph
+                    realSize = realSize + 12.25
+                End If
+                If realSize + picSize >= 733.5 Then
+                    .InsertBreak (wdPageBreak)
+                    realSize = 0
                 End If
                 imageFileCount = 0
                 .EndKey Unit:=wdStory
                 .TypeText Text:=CStr("- " & replaceLabel(ThisWorkbook.Sheets(1).Cells(i, 3)))
                 .TypeParagraph
+                realSize = realSize + 12.25
             End Select
         Next i
     End With
