@@ -301,10 +301,14 @@ Function replaceLabel(ByVal target)
         target = ""
         For j = 0 To UBound(arr1)
             If InStr(arr1(j), findStr) > 0 And InStr(replaceStr, "*") > 0 Then
-                If j = 0 Then
-                    target = Replace(replaceStr, "*", Trim(arr1(j)))
+                If findStr = "-" And IsNumeric(Mid(arr1(j), InStr(arr1(j), findStr) + 1, 1)) Then
+                    target = Trim(arr1(j))
                 Else
-                    target = target & " (" & Replace(replaceStr, "*", Trim(arr1(j)))
+                    If j = 0 Then
+                        target = Replace(replaceStr, "*", Trim(arr1(j)))
+                    Else
+                        target = target & " (" & Replace(replaceStr, "*", Trim(arr1(j)))
+                    End If
                 End If
             Else
                 If j = 0 Then
