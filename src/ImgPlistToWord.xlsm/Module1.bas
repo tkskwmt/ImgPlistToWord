@@ -163,12 +163,24 @@ Sub unzipFile()
         toFolderPath = Mid(.Cells(1, 3), 1, posFld - 1)
         
         Set WSH = CreateObject("WScript.Shell")
-        psCommand = "Expand-Archive -Path " & zipFilePath & " -DestinationPath " & toFolderPath & " -Force"
-        result = WSH.Run("powershell -NoProfile -ExecutionPolicy Unrestricted " & psCommand, WindowStyle:=0, WaitOnReturn:=True)
+        
+        zipFilePath = Replace(zipFilePath, " ", "' '")
+        zipFilePath = Replace(zipFilePath, "(", "'('")
+        zipFilePath = Replace(zipFilePath, ")", "')'")
+        toFolderPath = Replace(toFolderPath, " ", "' '")
+        toFolderPath = Replace(toFolderPath, "(", "'('")
+        toFolderPath = Replace(toFolderPath, ")", "')'")
+        
+        psCommand = "powershell -NoProfile -ExecutionPolicy Unrestricted Expand-Archive -Path """ & zipFilePath & """ -DestinationPath """ & toFolderPath & """ -Force"
+        result = WSH.Run(psCommand, WindowStyle:=0, WaitOnReturn:=True)
     End With
     Set WSH = Nothing
     
-    MsgBox ("Completed")
+    If result = 0 Then
+        MsgBox ("Completed")
+    Else
+        MsgBox ("Failed to unzip file!!")
+    End If
 
 End Sub
 Sub writeWordFile()
