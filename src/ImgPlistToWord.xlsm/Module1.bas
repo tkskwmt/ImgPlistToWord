@@ -65,19 +65,21 @@ Sub loadImgPlist()
             array1 = Split(myNode.ChildNodes(0).Text, " ")
             For Each myNode2 In array1
                 Select Case myNode2
-                Case "mainCategory", "subCategory", "countStoredImages", "imageFile"
+                Case "mainCategory", "subFolderMode", "subCategory", "countStoredImages", "imageFile"
                     Select Case myNode2
                     Case "mainCategory"
-                        .Cells(i, 1) = mainCategoryCount * 100
+                        .Cells(i, 1) = mainCategoryCount * 1000
                         mainCategoryCount = mainCategoryCount + 1
                         subCategoryCount = 0
+                    Case "subFolderMode"
+                        .Cells(i, 1) = (mainCategoryCount - 1) * 1000 + 0.1
                     Case "subCategory"
-                        .Cells(i, 1) = 1 + mainCategoryCount * 100 + subCategoryCount * 10
+                        .Cells(i, 1) = 1 + mainCategoryCount * 1000 + subCategoryCount * 10
                         subCategoryCount = subCategoryCount + 1
                     Case "countStoredImages"
-                        .Cells(i, 1) = 2 + mainCategoryCount * 100 + subCategoryCount * 10
+                        .Cells(i, 1) = 2 + mainCategoryCount * 1000 + subCategoryCount * 10
                     Case "imageFile"
-                        .Cells(i, 1) = 3 + mainCategoryCount * 100 + subCategoryCount * 10
+                        .Cells(i, 1) = 3 + mainCategoryCount * 1000 + subCategoryCount * 10
                     End Select
                     .Cells(i, 2) = myNode2
                     subSeqCount = 0
