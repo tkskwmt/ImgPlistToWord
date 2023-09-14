@@ -169,9 +169,11 @@ Sub unzipFile()
         zipFilePath = Replace(zipFilePath, " ", "' '")
         zipFilePath = Replace(zipFilePath, "(", "'('")
         zipFilePath = Replace(zipFilePath, ")", "')'")
+        zipFilePath = Replace(zipFilePath, "''", "")
         toFolderPath = Replace(toFolderPath, " ", "' '")
         toFolderPath = Replace(toFolderPath, "(", "'('")
         toFolderPath = Replace(toFolderPath, ")", "')'")
+        toFolderPath = Replace(toFolderPath, "''", "")
         
         psCommand = "powershell -NoProfile -ExecutionPolicy Unrestricted Expand-Archive -Path """ & zipFilePath & """ -DestinationPath """ & toFolderPath & """ -Force"
         result = WSH.Run(psCommand, WindowStyle:=0, WaitOnReturn:=True)
